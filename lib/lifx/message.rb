@@ -30,14 +30,14 @@ module LIFX
 
         message = Protocol::Message.read(data)
         path = ProtocolPath.new(raw_site: message.raw_site, raw_target: message.raw_target, tagged: message.tagged)
-        payload_class = message_type_for_id(message.type.snapshot)
+        payload_class = message_type_for_id(message.type_.snapshot)
         if payload_class.nil?
           if Config.log_invalid_messages
-            logger.error("Message.unpack: Unrecognised payload ID: #{message.type}")
+            logger.error("Message.unpack: Unrecognised payload ID: #{message.type_}")
             logger.error("Message.unpack: Message: #{message}")
           end
           return nil # FIXME
-          raise UnmappedPayload.new("Unrecognised payload ID: #{message.type}")
+          raise UnmappedPayload.new("Unrecognised payload ID: #{message.type_}")
         end
         begin
           payload = payload_class.read(message.payload)
@@ -117,7 +117,7 @@ module LIFX
       if type_id.nil?
         raise UnmappedPayload.new("Unmapped payload class #{payload.class}")
       end
-      @message.type = type_id
+      @message.type_ = type_id
       @message.payload = payload.pack
     end
 
@@ -138,7 +138,7 @@ module LIFX
       else
         hash[:device] = path.device_id
       end
-      hash[:type] = payload.class.to_s.sub('LIFX::Protocol::', '')
+      hash[:type_] = payload.class.to_s.sub('LIFX::Protocol::', '')
       hash[:addressable] = addressable? ? 'true' : 'false'
       hash[:tagged] = path.tagged? ? 'true' : 'false'
       hash[:at_time] = @message.at_time if @message.at_time && @message.at_time > 0
