@@ -13,7 +13,20 @@ module LIFX
         !!@socket
       end
 
+      def write_raw(data)
+        logger.debug("-> #{data}")
+        @socket.send(data.scan(/../).map { |x| x.hex.chr }.join, 0, host, port)
+        true
+      rescue => ex
+        logger.warn("#{self}: Error on #write: #{ex}")
+        logger.debug("#{self}: Backtrace: #{ex.backtrace.join("\n")}")
+        close
+        false
+      end
+
       def write(message)
+        logger.debug("-> Broadcast UDP message: #{message}")
+        logger.debug("-> #{message.to_hex}")
         data = message.pack
         @socket.send(data, 0, host, port)
         true
@@ -37,7 +50,9 @@ module LIFX
           loop do
             begin
               bytes, (_, _, ip, _) = reader.recvfrom(128)
+              logger.debug("<- #{bytes.each_byte.map { |b| b.to_s(16).rjust(2, '0') }.join}")
               message = Message.unpack(bytes)
+              logger.debug("<- Incoming message: #{message}")
               notify_observers(:message_received, {message: message, ip: ip, transport: self})
             rescue Message::UnpackError
               if Config.log_invalid_messages

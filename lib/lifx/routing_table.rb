@@ -1,6 +1,8 @@
 module LIFX
   # @private
   class RoutingTable
+    include Logging
+
     class Entry < Struct.new(:site_id, :device_id, :tag_ids, :last_seen); end
     # RoutingTable stores the device <-> site mapping
     def initialize(entries: {})
@@ -25,6 +27,10 @@ module LIFX
 
     def site_ids
       entries.map(&:site_id).uniq
+    end
+
+    def device_ids
+      entries.map(&:device_id).uniq
     end
 
     def entries

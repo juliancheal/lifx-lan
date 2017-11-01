@@ -10,7 +10,7 @@ module LIFX
     # @param duration: [Numeric] Transition time in seconds
     # @return [Light, LightCollection] self for chaining
     def set_color(color, duration: LIFX::Config.default_duration)
-      send_message(Protocol::Light::Set.new(
+      send_message(Protocol::Light::SetColor.new(
         color: color.to_hsbk,
         duration: (duration * MSEC_PER_SEC).to_i,
         stream: 0,
@@ -169,16 +169,6 @@ module LIFX
     def refresh
       send_message(Protocol::Light::Get.new)
       self
-    end
-
-    # Attempts to set the site id of the light.
-    # Will clear label and tags. This method cannot guarantee message receipt.
-    # @note Don't use this unless you know what you're doing.
-    # @api private
-    # @param site_id [String] Site ID
-    # @return [void]
-    def set_site_id(site_id)
-      send_message(Protocol::Device::SetSite.new(site: [site_id].pack('H*')))
     end
 
     NSEC_IN_SEC = 1_000_000_000

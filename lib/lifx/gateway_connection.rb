@@ -6,7 +6,7 @@ module LIFX
   # @private
   class GatewayConnection
     # GatewayConnection handles the UDP and TCP connections to the gateway
-    # A GatewayConnection is created when a new device sends a StatePanGateway
+    # A GatewayConnection is created when a new device sends a StateService
     include Timers
     include Logging
     include Observable
@@ -21,7 +21,7 @@ module LIFX
     def handle_message(message, ip, transport)
       payload = message.payload
       case payload
-      when Protocol::Device::StatePanGateway
+      when Protocol::Device::StateService
         if use_udp? && !udp_connected? && payload.service == Protocol::Device::Service::UDP
           # UDP transport here is only for sending directly to bulb
           # We receive responses via UDP transport listening to broadcast in Network
@@ -158,13 +158,15 @@ module LIFX
       if tcp_connected?
         if @tcp_transport.write(message)
           logger.debug("-> #{self} #{@tcp_transport}: #{message}")
+          logger.debug("-> #{message.to_hex}")
           return true
         end
       end
 
       if udp_connected?
         if @udp_transport.write(message)
-          logger.debug("-> #{self} #{@tcp_transport}: #{message}")
+          logger.debug("-> #{self} #{@udp_transport}: #{message}")
+          logger.debug("-> #{message.to_hex}")
           return true
         end
       end

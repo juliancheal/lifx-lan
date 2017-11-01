@@ -1,7 +1,7 @@
 module LIFX
   # @api private
   class TagTable
-    class Entry < Struct.new(:tag_id, :label, :site_id); end
+    class Entry < Struct.new(:tag_id, :label, :device_id); end
 
     def initialize(entries: {})
       @entries = Hash.new { |h, k| h[k] = {} }
@@ -10,11 +10,11 @@ module LIFX
       end
     end
 
-    def entries_with(tag_id: nil, site_id: nil, label: nil)
+    def entries_with(tag_id: nil, device_id: nil, label: nil)
       entries.select do |entry|
         ret = []
         ret << (entry.tag_id == tag_id) if tag_id
-        ret << (entry.site_id == site_id) if site_id
+        ret << (entry.device_id == device_id) if device_id
         ret << (entry.label == label) if label
         ret.all?
       end
@@ -24,15 +24,15 @@ module LIFX
       entries_with(**args).first
     end
 
-    def update_table(tag_id: self.tag_id, label: self.label, site_id: self.site_id)
-      entry = @entries[site_id][tag_id] ||= Entry.new(tag_id, label, site_id)
+    def update_table(tag_id: self.tag_id, label: self.label, device_id: self.device_id)
+      entry = @entries[device_id][tag_id] ||= Entry.new(tag_id, label, device_id)
       entry.label = label
     end
 
-    def delete_entries_with(tag_id: nil, site_id: nil, label: nil)
-      matching_entries = entries_with(tag_id: tag_id, site_id: site_id, label: label)
+    def delete_entries_with(tag_id: nil, device_id: nil, label: nil)
+      matching_entries = entries_with(tag_id: tag_id, device_id: device_id, label: label)
       matching_entries.each do |entry|
-        @entries[entry.site_id].delete(entry.tag_id)
+        @entries[entry.device_id].delete(entry.tag_id)
       end
     end
 

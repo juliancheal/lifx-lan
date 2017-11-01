@@ -147,6 +147,11 @@ module LIFX
       attrs = hash.map { |k, v| "#{k}=#{v}" }.join(' ')
       %Q{#<LIFX::Message #{attrs}>}
     end
+
+    def to_hex
+      pack.each_byte.map { |b| b.to_s(16).rjust(2, '0') }.join
+    end
+
     alias_method :inspect, :to_s
 
     protected

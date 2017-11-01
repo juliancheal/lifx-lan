@@ -47,6 +47,10 @@ module LIFX
       @tag_manager = TagManager.new(context: self, tag_table: @routing_manager.tag_table)
     end
 
+    def stop_discovery
+      @transport_manager.stop_discovery
+    end
+
     def stop
       @transport_manager.stop
       stop_timers
@@ -113,6 +117,7 @@ module LIFX
             Time.at(payload.time.to_f / NSEC_PER_SEC)
           end
         rescue => ex
+          logger.debug("!!! Add light failed")
           failed_lights << light
         end
       end

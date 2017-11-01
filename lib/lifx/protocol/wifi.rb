@@ -25,50 +25,74 @@ module LIFX
         OFF = 3
       end
 
+      # Gets interface status
       class Get < Payload
         endian :little
 
-        uint8 :interface
+        uint8 :interface # Interface to introspect
       end
 
+      # Switch interface on/off
       class Set < Payload
         endian :little
 
-        uint8 :interface
-        bool :active
+        uint8 :interface # Interface to introspect
+        bool  :active    # Turns off interface if active is false
       end
 
+      # Describes interface state
       class State < Payload
         endian :little
 
-        uint8 :interface
-        uint8 :status
-        uint32 :ipv4
-        string :ipv6, length: 16
+        uint8  :interface         # Interface to introspect
+        uint8  :status            # Interface status
+        uint32 :ipv4              # IPv4 address if interface is active
+        string :ipv6, length: 16  # IPv6 address if interface is active and is IPv6 addressable
       end
 
+      # Scan for WiFi access points. Returns StateAccessPoints
+      class GetAccessPoints < Payload
+        endian :little
+
+      end
+
+      # The AP scan results for an interface
+      class StateAccessPoints < Payload
+        endian :little
+
+        uint8  :interface                            # Interface to introspect
+        string :ssid, length: 32, trim_padding: true # SSID of Access Point
+        uint8  :security                             # Security mode
+        int16  :strength                             # Signal strength in dB
+        uint16 :channel                              # Frequency channel
+      end
+
+      # Get WiFi access point information. Returns StateAccessPoint
       class GetAccessPoint < Payload
         endian :little
 
+        uint8 :interface          # Interface to introspect
       end
 
+      # Configure interface, should return StateAccessPoint
       class SetAccessPoint < Payload
         endian :little
 
-        uint8 :interface
-        string :ssid, length: 32, trim_padding: true
-        string :pass, length: 64, trim_padding: true
-        uint8 :security
+        uint8  :interface                            # Interface to introspect
+        string :ssid, length: 32, trim_padding: true # SSID of Access Point
+        string :pass, length: 64, trim_padding: true # Passphrase used to authenticate
+        uint8  :security                             # Security mode
       end
 
+      # Interface configuration
       class StateAccessPoint < Payload
         endian :little
 
-        uint8 :interface
-        string :ssid, length: 32, trim_padding: true
-        uint8 :security
-        int16 :strength
-        uint16 :channel
+        uint8  :interface                            # Interface to introspect
+        string :ssid, length: 32, trim_padding: true # SSID of Access Point
+        uint8  :security                             # Security mode
+        int16  :strength                             # Signal strength in dB
+        uint16 :channel                              # Frequency channel
       end
 
     end

@@ -34,7 +34,7 @@ module LIFX
       logger.debug("<- #{self} #{transport}: #{message}")
       payload = message.payload
       case payload
-      when Protocol::Device::StatePanGateway
+      when Protocol::Device::StateService
         @gateways_mutex.synchronize do
           @gateways[message.device_id] ||= GatewayConnection.new
           @gateways[message.device_id].handle_message(message, ip, transport)
