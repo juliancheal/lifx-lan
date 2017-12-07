@@ -363,7 +363,7 @@ module LIFX
     end
 
     # An exception for when synchronous messages take too long to receive a response
-    class MessageTimeout < TimeoutError
+    class MessageTimeout < Timeout::Error
       attr_accessor :device
     end
 
