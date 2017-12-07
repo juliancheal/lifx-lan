@@ -7,7 +7,7 @@ module LIFX
       @device_site_mapping = entries
     end
 
-    def update_table(site_id: site_id, device_id: device_id, tag_ids: nil, last_seen: Time.now)
+    def update_table(site_id: self.site_id, device_id: self.device_id, tag_ids: nil, last_seen: Time.now)
       device_mapping = @device_site_mapping[device_id] ||= Entry.new(site_id, device_id, [])
       device_mapping.site_id = site_id
       device_mapping.last_seen = last_seen
