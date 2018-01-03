@@ -1,9 +1,15 @@
-# LIFX
+# LIFX-lan
 
-LIFX will no longer be supporting lifx-gem. This has been done in order to better support developers by focusing instead on releasing documentation for the LAN protocol itself and enabling SDKs to be produced in any language. We have also published a HTTP API cloud-based light control from anywhere.
+[![Build Status](https://travis-ci.org/juliancheal/lifx-lan.svg)](https://travis-ci.org/juliancheal/lifx-lan)
+[![Code Climate](https://codeclimate.com/github/juliancheal/lifx-lan/badges/gpa.svg)](https://codeclimate.com/github/juliancheal/lifx-lan)
+[![Coverage Status](https://coveralls.io/repos/juliancheal/lifx-lan/badge.svg?branch=master&service=github)](https://coveralls.io/github/juliancheal/lifx-lan?branch=master)
+[![Dependency Status](https://gemnasium.com/juliancheal/lifx-lan.svg)](https://gemnasium.com/juliancheal/lifx-lan)
+[![Security](https://hakiri.io/github/juliancheal/lifx-lan/master.svg)](https://hakiri.io/github/juliancheal/lifx-lan/master)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Our Developer Zone is available if you have any questions about using the newly released documentation. You can find it at https://community.lifx.com/
 
-We sincerely hope that someone decides to fork this repository and continues maintaining it. If you do this please feel free to let us know on the Developer Zone or by email at developers@lifx.com. We will do our best to support your efforts.
+[![Build history for master branch](https://buildstats.info/travisci/chart/ManageIQ/manageiq?branch=master&buildCount=50)](https://travis-ci.org/juliancheal/lifx-lan/branches)
 
-We hope that our new commitment to support public documentation allows better quality libraries than we have the resources to support alone.
+LIFX-lan is a fork of the [lifx-gem](https://github.com/LIFX/lifx-gem). This gem is based on the [Lifx LAN](https://api.developer.lifx.com/) protocol.
+
+Lifx have a Developer Zone over on their community site https://community.lifx.com/

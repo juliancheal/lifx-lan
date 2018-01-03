@@ -1,15 +1,14 @@
 # Auto-off script
-# 
+#
 # This script will turn a light off after 10 seconds when it has detected it has turned on.
 # To run: bundle; bundle ruby auto-off.rb [light label]
 
-require 'bundler'
-Bundler.require
+require 'lifx-lan'
 
 AUTO_OFF_DELAY = 10
 
 label = ARGV.first
-lifx = LIFX::Client.lan
+lifx = LIFX::LAN::Client.lan
 lifx.discover! do
   label ? lifx.lights.with_label(label) : lifx.lights.first
 end
