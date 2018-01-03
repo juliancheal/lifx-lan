@@ -6,6 +6,7 @@ require 'weakref'
 module LIFX
   # @private
   class RoutingManager
+    include Logging
     include Utilities
     include RequiredKeywordArguments
 
@@ -32,20 +33,11 @@ module LIFX
           ProtocolPath.new(site_id: entry.site_id, tag_ids: [entry.tag_id])
         end
       elsif target.broadcast?
-        if @routing_table.site_ids.empty?
-          [ProtocolPath.new(site_id: "\x00".b * 6, tag_ids: [])]
-        else
-          @routing_table.site_ids.map { |site_id| ProtocolPath.new(site_id: site_id, tag_ids: []) }
-        end
+        [ProtocolPath.new(site_id: "\x00".b * 6, tag_ids: [])]
       elsif target.site_id && target.device_id.nil?
         [ProtocolPath.new(site_id: target.site_id, tag_ids: [])]
       else
-        site_id = @routing_table.site_id_for_device_id(target.device_id)
-        if site_id
-          [ProtocolPath.new(site_id: site_id, device_id: target.device_id)]
-        else
-          @routing_table.site_ids.map { |site_id| ProtocolPath.new(site_id: site_id, device_id: target.device_id)}
-        end
+        [ProtocolPath.new(site_id: target.site_id, device_id: target.device_id)]
       end
     end
 
@@ -53,7 +45,7 @@ module LIFX
       entry = @routing_table.entry_for_device_id(device_id)
       return [] if entry.nil?
       entry.tag_ids.map do |tag_id|
-        tag = @tag_table.entry_with(site_id: entry.site_id, tag_id: tag_id)
+        tag = @tag_table.entry_with(device_id: entry.device_id, tag_id: tag_id)
         tag && tag.label
       end.compact
     end
@@ -64,57 +56,57 @@ module LIFX
         case message.payload
         when Protocol::Light::Get
           if message.path.all_tags?
-            @last_refresh_seen[message.site_id] = Time.now
+            @last_refresh_seen[message.device_id] = Time.now
           end
         end
         return
       end
 
       payload = message.payload
-
-      if !@routing_table.site_ids.include?(message.site_id)
-        # New site detected, fire refresh events
-        refresh_site(message.site_id)
+      if !@routing_table.device_ids.include?(message.device_id)
+        # New device detected, fire refresh events
+        refresh_site(message.site_id, message.device_id)
       end
       case payload
       when Protocol::Device::StateTagLabels
         tag_ids = tag_ids_from_field(payload.tags)
         if payload.label.empty?
           tag_ids.each do |tag_id|
-            @tag_table.delete_entries_with(site_id: message.site_id, tag_id: tag_id)
+            @tag_table.delete_entries_with(device_id: message.device_id, tag_id: tag_id)
           end
         else
-          @tag_table.update_table(site_id: message.site_id, tag_id: tag_ids.first, label: payload.label.to_s.force_encoding('utf-8'))
+          @tag_table.update_table(device_id: message.device_id, tag_id: tag_ids.first, label: payload.label.to_s.force_encoding('utf-8'))
         end
       when Protocol::Device::StateTags, Protocol::Light::State
         @routing_table.update_table(site_id: message.site_id,
                                     device_id: message.device_id,
                                     tag_ids: tag_ids_from_field(message.payload.tags))
-      when Protocol::Device::StatePanGateway, Protocol::Device::StatePower
+      when Protocol::Device::StateService, Protocol::Device::StatePower
         @routing_table.update_table(site_id: message.site_id, device_id: message.device_id)
       end
     end
 
     MINIMUM_REFRESH_INTERVAL = 1
     def refresh(force: false)
-      @routing_table.site_ids.each do |site_id|
-        next if (seen = @last_refresh_seen[site_id]) && Time.now - seen < MINIMUM_REFRESH_INTERVAL && !force
-        refresh_site(site_id)
+      @routing_table.device_ids.each do |device_id|
+        next if (seen = @last_refresh_seen[device_id]) && Time.now - seen < MINIMUM_REFRESH_INTERVAL && !force
+        site_id = @routing_table.site_id_for_device_id(device_id)
+        refresh_site(site_id, device_id)
       end
     end
 
-    def refresh_site(site_id)
-      get_lights(site_id)
-      get_tag_labels(site_id)
+    def refresh_site(site_id, device_id)
+      get_lights(site_id, device_id)
+      get_tag_labels(site_id, device_id)
     end
 
-    def get_lights(site_id)
-      context.send_message(target: Target.new(site_id: site_id), payload: Protocol::Light::Get.new)
+    def get_lights(site_id, device_id)
+      context.send_message(target: Target.new(site_id: site_id, device_id: device_id), payload: Protocol::Light::Get.new)
     end
 
     UINT64_MAX = 2 ** 64 - 1
-    def get_tag_labels(site_id)
-      context.send_message(target: Target.new(site_id: site_id), payload: Protocol::Device::GetTagLabels.new(tags: UINT64_MAX))
+    def get_tag_labels(site_id, device_id)
+      context.send_message(target: Target.new(site_id: site_id, device_id: device_id), payload: Protocol::Device::GetTagLabels.new(tags: UINT64_MAX))
     end
   end
 end

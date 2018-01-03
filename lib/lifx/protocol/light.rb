@@ -13,25 +13,68 @@ module LIFX
       class Hsbk < Payload
         endian :little
 
-        uint16 :hue # 0..65_535 scaled to 0° - 360°.
-        uint16 :saturation # 0..65_535 scaled to 0% - 100%.
-        uint16 :brightness # 0..65_535 scaled to 0% - 100%.
-        uint16 :kelvin # Explicit 2_400..10_000.
+        uint16 :hue        # 0..65_535 scaled to 0° - 360°
+        uint16 :saturation # 0..65_535 scaled to 0% - 100%
+        uint16 :brightness # 0..65_535 scaled to 0% - 100%
+        uint16 :kelvin     # Explicit 2_400..9_000
       end
 
+      # Introspect the light state
       class Get < Payload
         endian :little
-
       end
 
-      class Set < Payload
+      # class Set < Payload
+      #   endian :little
+
+      #   uint8 :stream # 0 is no stream.
+      #   hsbk :color
+      #   uint32 :duration # Milliseconds.
+      # end
+
+      # Light state including identifying meta data
+      class State < Payload
         endian :little
 
-        uint8 :stream # 0 is no stream.
-        hsbk :color
-        uint32 :duration # Milliseconds.
+        hsbk   :color
+        int16  :dim
+        uint16 :power
+        string :label, length: 32, trim_padding: true
+        uint64 :tags
       end
 
+      # Simple light color control
+      class SetColor < Payload
+        endian :little
+
+        uint8  :stream, value: 0 # Reserved for LIFX use, must be 0 (0 is no stream)
+        hsbk   :color            # Color value
+        uint32 :duration         # Transition duration in milliseconds
+      end
+
+      # Instrospect light power level on device
+      class GetPower < Payload
+        endian :little
+
+      end
+
+      # Set the power level of a light
+      class SetPower < Payload
+        endian :little
+
+        uint16 :level    # Power level between 0..65535. Zero implies standby and non-zero sets a corresponding power draw level on device
+        uint32 :duration # Duration in milliseconds for the power transition between 0..65535
+      end
+
+      # Current power level of device
+      class StatePower < Payload
+        endian :little
+
+        uint16 :level
+      end
+
+      # Does below code work with LIFX20 ?
+      # ----------------------------------------------------------------
       class SetWaveform < Payload
         endian :little
 
@@ -73,19 +116,8 @@ module LIFX
         rgbw :color
       end
 
-      class State < Payload
-        endian :little
-
-        hsbk :color
-        int16 :dim
-        uint16 :power
-        string :label, length: 32, trim_padding: true
-        uint64 :tags
-      end
-
       class GetRailVoltage < Payload
         endian :little
-
       end
 
       class StateRailVoltage < Payload
@@ -96,7 +128,6 @@ module LIFX
 
       class GetTemperature < Payload
         endian :little
-
       end
 
       class StateTemperature < Payload

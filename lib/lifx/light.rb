@@ -193,18 +193,6 @@ module LIFX
       Time.now.to_f - start
     end
 
-    # Returns the mesh firmware details
-    # @api private
-    # @return [Hash] firmware details
-    def mesh_firmware(fetch: true)
-      @mesh_firmware ||= begin
-        send_message!(Protocol::Device::GetMeshFirmware.new,
-          wait_for: Protocol::Device::StateMeshFirmware) do |payload|
-          Firmware.new(payload)
-        end if fetch
-      end
-    end
-
     # Returns the wifi firmware details
     # @api private
     # @return [Hash] firmware details
@@ -223,20 +211,6 @@ module LIFX
       send_message!(Protocol::Light::GetTemperature.new,
           wait_for: Protocol::Light::StateTemperature) do |payload|
         payload.temperature / 100.0
-      end
-    end
-
-    # Returns mesh network info
-    # @api private
-    # @return [Hash] Mesh network info
-    def mesh_info
-      send_message!(Protocol::Device::GetMeshInfo.new,
-          wait_for: Protocol::Device::StateMeshInfo) do |payload|
-        {
-          signal: payload.signal, # This is in Milliwatts
-          tx: payload.tx,
-          rx: payload.rx
-        }
       end
     end
 
@@ -425,11 +399,6 @@ module LIFX
 
       add_hook(Protocol::Device::StatePower) do |payload|
         @power = payload.level.to_i
-        seen!
-      end
-
-      add_hook(Protocol::Device::StateMeshFirmware) do |payload|
-        @mesh_firmware = Firmware.new(payload)
         seen!
       end
 

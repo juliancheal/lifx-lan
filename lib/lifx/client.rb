@@ -40,6 +40,10 @@ module LIFX
       @context.discover
     end
 
+    def stop_discovery
+      @context.stop_discovery
+    end
+
     class DiscoveryTimeout < Timeout::Error; end
     # This method tells the {NetworkContext} to look for devices, and will block
     # until there's at least one device.

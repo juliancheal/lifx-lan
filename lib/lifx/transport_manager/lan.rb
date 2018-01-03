@@ -4,17 +4,16 @@ module LIFX
   module TransportManager
     class LAN < Base
       include Timers
-      def initialize(bind_ip: '0.0.0.0', send_ip: Config.broadcast_ip, port: 56700, peer_port: 56750)
+      def initialize(bind_ip: '0.0.0.0', send_ip: Config.broadcast_ip, port: 56700)
         super
         @bind_ip   = bind_ip
         @send_ip   = send_ip
         @port      = port
-        @peer_port = peer_port
 
         @sites = {}
         @threads = []
         @threads << initialize_timer_thread
-        initialize_transports
+        initialize_transport
         initialize_periodic_refresh
         initialize_message_rate_updater
       end
@@ -33,7 +32,7 @@ module LIFX
         stop_discovery
         @discovery_thread = Thread.start do
           @last_request_seen = Time.at(0)
-          message = Message.new(path: ProtocolPath.new(tagged: true), payload: Protocol::Device::GetPanGateway.new)
+          message = Message.new(path: ProtocolPath.new(tagged: true), payload: Protocol::Device::GetService.new)
           logger.info("Discovering gateways on #{@bind_ip}:#{@port}")
           loop do
             interval = @sites.empty? ?
@@ -60,7 +59,6 @@ module LIFX
         @threads.each do |thr|
           thr.abort
         end
-        @peer_transport.close
         @transport.close
         @sites.values.each do |site|
           site.stop
@@ -79,7 +77,6 @@ module LIFX
             broadcast(message)
           end
         end
-        broadcast_to_peers(message)
         @message_rate_timer.reset
       end
 
@@ -99,13 +96,6 @@ module LIFX
           create_broadcast_transport
         end
         @transport.write(message)
-      end
-
-      def broadcast_to_peers(message)
-        if !@peer_transport.connected?
-          create_peer_transport
-        end
-        @peer_transport.write(message)
       end
 
       def sites
@@ -136,26 +126,15 @@ module LIFX
       MESSAGE_RATE_1_2 = 20
       def initialize_message_rate_updater
         @message_rate_timer = timers.every(2) do
-          missing_mesh_firmware = context.lights.alive.select { |l| l.mesh_firmware(fetch: false).nil? }
-          if missing_mesh_firmware.count > 10
-            context.send_message(target: Target.new(broadcast: true), payload: Protocol::Device::GetMeshFirmware.new)
-          elsif missing_mesh_firmware.count > 0
-            missing_mesh_firmware.each { |l| l.send_message(Protocol::Device::GetMeshFirmware.new) }
-          else
-            @message_rate = context.lights.alive.all? do |light|
-              m = light.mesh_firmware(fetch: false)
-              m && m >= '1.2'
-            end ? MESSAGE_RATE_1_2 : DEFAULT_MESSAGE_RATE
-            gateway_connections.each do |connection|
-              connection.set_message_rate(@message_rate)
-            end
+          @message_rate = MESSAGE_RATE_1_2
+          gateway_connections.each do |connection|
+            connection.set_message_rate(@message_rate)
           end
         end
       end
 
-      def initialize_transports
+      def initialize_transport
         create_broadcast_transport
-        create_peer_transport
       end
 
       def create_broadcast_transport
@@ -167,19 +146,11 @@ module LIFX
         @transport.listen(ip: @bind_ip)
       end
 
-      def create_peer_transport
-        @peer_transport = Transport::UDP.new('255.255.255.255', @peer_port)
-        @peer_transport.add_observer(self, :message_received) do |message: nil, ip: nil, transport: nil|
-          notify_observers(:message_received, message: message, ip: ip, transport: transport)
-        end
-        @peer_transport.listen(ip: @bind_ip)
-      end
-
       def handle_broadcast_message(message, ip, transport)
         return if message.nil?
         payload = message.payload
         case payload
-        when Protocol::Device::StatePanGateway
+        when Protocol::Device::StateService
           if !@sites.has_key?(message.path.site_id)
             @sites[message.path.site_id] = Site.new(id: message.path.site_id)
             @sites[message.path.site_id].add_observer(self, :message_received) do |**args|
@@ -187,7 +158,7 @@ module LIFX
             end
           end
           @sites[message.path.site_id].handle_message(message, ip, transport)
-        when Protocol::Device::GetPanGateway
+        when Protocol::Device::GetService
           @last_request_seen = Time.now
         end
       end
