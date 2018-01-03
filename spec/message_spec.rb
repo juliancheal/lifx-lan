@@ -34,7 +34,7 @@ describe LIFX::Message do
 
     it 'returns the correct metadata' do
       expect(msg.at_time).to eq 0
-      expect(msg.type).to eq 103
+      expect(msg.type_).to eq 103
     end
 
     let(:payload) { msg.payload }
@@ -110,7 +110,7 @@ describe LIFX::Message do
         expect(msg).to be_addressable
         expect(msg.path.raw_target).to eq 'abcdefgh'
         expect(msg.at_time).to eq 9001
-        expect(msg.type).to eq 305
+        expect(msg.type_).to eq 305
         expect(msg.payload.class).to eq LIFX::Protocol::Wifi::SetAccessPoint
         expect(msg.payload.interface).to eq 1
         expect(msg.payload.ssid).to eq 'who let the dogs out'
