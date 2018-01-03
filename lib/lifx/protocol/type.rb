@@ -63,7 +63,7 @@ module LIFX
       101 => Light::Get,
       # 102 => Light::Set,
       102 => Light::SetColor,
-      # 103 => Light::SetWaveform,
+      103 => Light::SetWaveform,
       # 104 => Light::SetDimAbsolute,
       # 105 => Light::SetDimRelative,
       # 106 => Light::SetRgbw,
