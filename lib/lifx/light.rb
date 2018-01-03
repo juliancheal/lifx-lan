@@ -185,6 +185,24 @@ module LIFX
       delta = device_time - Time.now
     end
 
+    def ambience(fetch: true)
+      @ambience ||= begin
+        send_message!(Protocol::Sensor::GetAmbientLight.new,
+            wait_for: Protocol::Sensor::StateAmbientLight) do |payload|
+          payload.inspect
+        end
+      end
+    end
+
+    def power_level(fetch: true)
+      @power_level ||= begin
+        send_message!(Protocol::Device::GetPower.new,
+            wait_for: Protocol::Device::StatePower) do |payload|
+          payload.inspect
+        end
+      end
+    end
+
     # Pings the device and measures response time.
     # @return [Float] Latency from sending a message to receiving a response.
     def latency
@@ -200,6 +218,15 @@ module LIFX
       @wifi_firmware ||= begin
         send_message!(Protocol::Device::GetWifiFirmware.new,
           wait_for: Protocol::Device::StateWifiFirmware) do |payload|
+          Firmware.new(payload)
+        end if fetch
+      end
+    end
+
+    def mcu_firmware(fetch: true)
+      @mcu_firmware ||= begin
+        send_message!(Protocol::Device::GetHostFirmware.new,
+          wait_for: Protocol::Device::StateHostFirmware) do |payload|
           Firmware.new(payload)
         end if fetch
       end
