@@ -1,3 +1,5 @@
 module LIFX
-  VERSION = "0.5.0"
+  module LAN
+    VERSION = "0.1.0"
+  end
 end

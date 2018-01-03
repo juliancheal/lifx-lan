@@ -5,13 +5,13 @@ begin
 rescue LoadError
 end
 
-require 'lifx'
-require 'lifx/utilities'
+require 'lifx-lan'
+require 'lifx/lan/utilities'
 
 shared_context 'integration', integration: true do
   def lifx
     $lifx ||= begin
-      c = LIFX::Client.lan
+      c = LIFX::LAN::Client.lan
       begin
         c.discover! do
           c.tags.include?('_Test') && c.lights.with_tag('_Test').count > 0
@@ -47,7 +47,7 @@ module SpecHelpers
   end
 end
 
-LIFX::Config.logger = Yell.new(STDERR) if ENV['DEBUG']
+LIFX::LAN::Config.logger = Yell.new(STDERR) if ENV['DEBUG']
 
 RSpec.configure do |config|
   config.include(SpecHelpers)

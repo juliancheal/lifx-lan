@@ -1,12 +1,14 @@
 module LIFX
-  # @private
-  module Logging
-    def self.included(mod)
-      mod.extend(self)
-    end
+  module LAN
+    # @private
+    module Logging
+      def self.included(mod)
+        mod.extend(self)
+      end
 
-    def logger
-      LIFX::Config.logger
+      def logger
+        LIFX::LAN::Config.logger
+      end
     end
   end
 end

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe LIFX::Message do
+describe LIFX::LAN::Message do
   context 'unpacking' do
     let(:data) do
       "\x39\x00\x00\x34\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x31" \
@@ -8,7 +8,7 @@ describe LIFX::Message do
       "\x00\x00\x00\x01\x00\x00\xff\xff\xff\xff\xac\x0d\xc8\x00\x00\x00\x00" \
       "\x00\x80\x3f\x00\x00\x00".b
     end
-    let(:msg) { LIFX::Message.unpack(data) }
+    let(:msg) { LIFX::LAN::Message.unpack(data) }
 
     it 'unpacks without errors' do
       expect(msg).not_to be_nil
@@ -26,7 +26,7 @@ describe LIFX::Message do
     end
 
     it 'has correct ProtocolPath data' do
-      expect(msg.path).to be_a(LIFX::ProtocolPath)
+      expect(msg.path).to be_a(LIFX::LAN::ProtocolPath)
       expect(msg.path.site_id).to eq '316c69667831'
       expect(msg.path.tag_ids).to eq []
       expect(msg.path.device_id).to be_nil
@@ -39,7 +39,7 @@ describe LIFX::Message do
 
     let(:payload) { msg.payload }
     it 'returns the payload' do
-      expect(payload.class).to eq LIFX::Protocol::Light::SetWaveform
+      expect(payload.class).to eq LIFX::LAN::Protocol::Light::SetWaveform
       expect(payload.stream).to eq 0
       expect(payload.transient).to eq(true)
       expect(payload.color.hue).to eq 0
@@ -59,18 +59,18 @@ describe LIFX::Message do
 
   context 'packing' do
     context 'no attributes' do
-      let(:msg) { LIFX::Message.new }
+      let(:msg) { LIFX::LAN::Message.new }
 
       it 'throws an exception' do
-        expect { msg.pack }.to raise_error(LIFX::Message::NoPayload)
+        expect { msg.pack }.to raise_error(LIFX::LAN::Message::NoPayload)
       end
     end
 
     context 'no path' do
-      let(:msg) { LIFX::Message.new(payload: LIFX::Protocol::Device::SetPower.new) }
+      let(:msg) { LIFX::LAN::Message.new(payload: LIFX::LAN::Protocol::Device::SetPower.new) }
 
       it 'defaults to null site and target' do
-        unpacked = LIFX::Message.unpack(msg.pack)
+        unpacked = LIFX::LAN::Message.unpack(msg.pack)
         expect(unpacked.path.site_id).to eq('000000000000')
         expect(unpacked.path.device_id).to eq('000000000000')
       end
@@ -78,10 +78,10 @@ describe LIFX::Message do
 
     context 'passed in via hash' do
       let(:msg) do
-        LIFX::Message.new({
-          path: LIFX::ProtocolPath.new(tagged: false, raw_target: 'abcdefgh'),
+        LIFX::LAN::Message.new({
+          path: LIFX::LAN::ProtocolPath.new(tagged: false, raw_target: 'abcdefgh'),
           at_time: 9001,
-          payload: LIFX::Protocol::Wifi::SetAccessPoint.new(
+          payload: LIFX::LAN::Protocol::Wifi::SetAccessPoint.new(
             interface: 1,
             ssid: 'who let the dogs out',
             pass: 'woof, woof, woof woof!',
@@ -111,7 +111,7 @@ describe LIFX::Message do
         expect(msg.path.raw_target).to eq 'abcdefgh'
         expect(msg.at_time).to eq 9001
         expect(msg.type_).to eq 305
-        expect(msg.payload.class).to eq LIFX::Protocol::Wifi::SetAccessPoint
+        expect(msg.payload.class).to eq LIFX::LAN::Protocol::Wifi::SetAccessPoint
         expect(msg.payload.interface).to eq 1
         expect(msg.payload.ssid).to eq 'who let the dogs out'
         expect(msg.payload.pass).to eq 'woof, woof, woof woof!'
@@ -121,14 +121,14 @@ describe LIFX::Message do
 
     context 'packing with tags' do
       let(:msg) do
-        LIFX::Message.new({
-          path: LIFX::ProtocolPath.new(tag_ids: [0, 1]),
+        LIFX::LAN::Message.new({
+          path: LIFX::LAN::ProtocolPath.new(tag_ids: [0, 1]),
           at_time: 9001,
-          payload: LIFX::Protocol::Device::GetTime.new
+          payload: LIFX::LAN::Protocol::Device::GetTime.new
         })
       end
 
-      let(:unpacked) { LIFX::Message.unpack(msg.pack) }
+      let(:unpacked) { LIFX::LAN::Message.unpack(msg.pack) }
 
       it 'packs the tag correctly' do
         expect(msg.pack).to eq "$\x00\x004\x00\x00\x00\x00\x03\x00\x00\x00"   \
@@ -152,14 +152,14 @@ describe LIFX::Message do
 
     context 'packing with device' do
       let(:msg) do
-        LIFX::Message.new({
-          path: LIFX::ProtocolPath.new(device_id: '0123456789ab', site_id: '0' * 12),
+        LIFX::LAN::Message.new({
+          path: LIFX::LAN::ProtocolPath.new(device_id: '0123456789ab', site_id: '0' * 12),
           at_time: 9001,
-          payload: LIFX::Protocol::Device::GetTime.new
+          payload: LIFX::LAN::Protocol::Device::GetTime.new
         })
       end
 
-      let(:unpacked) { LIFX::Message.unpack(msg.pack) }
+      let(:unpacked) { LIFX::LAN::Message.unpack(msg.pack) }
 
       it 'packs the tag correctly' do
         expect(msg.pack).to eq "$\x00\x00\x14\x00\x00\x00\x00\x01#Eg\x89\xAB" \

@@ -11,10 +11,10 @@ task :console do
   require "lifx"
   require "pry"
   if ENV['DEBUG']
-    LIFX::Config.logger.level = Logger::DEBUG
+    LIFX::LAN::Config.logger.level = Logger::DEBUG
   end
-  LIFX::Client.lan.discover! do |c|
+  LIFX::LAN::Client.lan.discover! do |c|
     c.lights.count > 0
   end
-  LIFX::Client.lan.pry
+  LIFX::LAN::Client.lan.pry
 end

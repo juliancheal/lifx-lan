@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'lifx/version'
+require 'lifx/lan/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "lifx"
-  spec.version       = LIFX::VERSION
-  spec.authors       = ["Jack Chen (chendo)"]
-  spec.email         = ["chendo+lifx-gem@lifx.co"]
+  spec.name          = "lifx-lan"
+  spec.version       = LIFX::LAN::VERSION
+  spec.authors       = ["Jack Chen (chendo), Julian Cheal (juliancheal)"]
+  spec.email         = ["julian.cheal+lifx-gem@lifx.co"]
   spec.description   = %q{A Ruby gem that allows easy interaction with LIFX devices.}
   spec.summary       = %q{A Ruby gem that allows easy interaction with LIFX devices. Handles discovery, rate limiting, tags, gateway connections and provides an object-based API for interacting with LIFX devices. }
-  spec.homepage      = "https://github.com/LIFX/lifx-gem"
+  spec.homepage      = "https://github.com/juliancheal/lifx-lan"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/).reject { |f| f =~ /^script\// }
