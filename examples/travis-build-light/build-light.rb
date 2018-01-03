@@ -3,10 +3,10 @@
 # To run: bundle; bundle ruby build-light.rb [user/repo]
 # Please note this doesn't have error handling yet.
 
-require 'bundler'
-Bundler.require
+require 'travis'
+require 'lifx-lan'
 
-lifx = LIFX::Client.lan
+lifx = LIFX::LAN::Client.lan
 lifx.discover!
 sleep 2 # Wait for tag data to come back
 
@@ -36,11 +36,11 @@ puts "Watching repository #{repo.slug}"
 def update_light(light, repository)
   color = case repository.color
   when 'green'
-    LIFX::Color.hsb(120, 1, 1)  
+    LIFX::LAN::Color.hsb(120, 1, 1)
   when 'yellow'
-    LIFX::Color.hsb(60, 1, 1)  
+    LIFX::LAN::Color.hsb(60, 1, 1)
   when 'red'
-    LIFX::Color.hsb(0, 1, 1)
+    LIFX::LAN::Color.hsb(0, 1, 1)
   end
 
   light.turn_on!

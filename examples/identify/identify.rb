@@ -6,8 +6,7 @@
 # until it narrows it down to a single bulb.
 # Please note it does not restore the light state before identification.
 
-require 'bundler'
-Bundler.require
+require 'lifx-lan'
 
 COLOURS = {
   'red' => [0, 1, 1],
@@ -16,7 +15,7 @@ COLOURS = {
   'blue' => [220, 1, 1]
 }
 
-LIFX::Config.logger = Logger.new(STDERR)
+LIFX::LAN::Config.logger = Logger.new(STDERR)
 c = LIFX::Client.lan
 c.discover
 5.times do
@@ -40,10 +39,10 @@ mapping = {}
 
 while lights.count > 1
   puts "Searching through #{lights.count} lights..."
-  c.lights.set_color(LIFX::Color.white)
+  c.lights.set_color(LIFX::LAN::Color.white)
   partitions = partition(lights, COLOURS.values.count)
   COLOURS.keys.each_with_index do |color_name, index|
-    color = LIFX::Color.hsb(*COLOURS[color_name])
+    color = LIFX::LAN::Color.hsb(*COLOURS[color_name])
     mapping[color_name] = partitions[index]
     next if partitions[index].nil?
     partitions[index].each do |l|
