@@ -7,7 +7,7 @@ module LIFX
 
       before do
         ['Some label', 'Another label', 'Much label'].each_with_index do |lbl, i|
-          manager.tag_table.update_table(site_id: 'site', tag_id: i, label: lbl)
+          manager.tag_table.update_table(device_id: 'device', tag_id: i, label: lbl)
         end
 
         manager.routing_table
