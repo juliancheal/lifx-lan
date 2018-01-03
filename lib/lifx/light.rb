@@ -23,7 +23,7 @@ module LIFX
     # @param id: [String] Device ID of the Light
     # @param site_id: [String] Site ID of the Light. Avoid using when possible.
     # @param label: [String] Label of Light to prepopulate
-    def initialize(context: required!(:context), id: id, site_id: nil, label: nil)
+    def initialize(context: required!(:context), id: self.id, site_id: nil, label: nil)
       @context = context
       @id = id
       @site_id = site_id
@@ -374,7 +374,7 @@ module LIFX
     # @param block: [Proc] the block that is executed when the expected `wait_for` payload comes back. If the return value is false or nil, it will try to send the message again.
     # @return [Object] the truthy result of `block` is returned.
     # @raise [MessageTimeout] if the device doesn't respond in time
-    def send_message!(payload, wait_for: wait_for, wait_timeout: Config.message_wait_timeout, retry_interval: Config.message_retry_interval, &block)
+    def send_message!(payload, wait_for: self.wait_for, wait_timeout: Config.message_wait_timeout, retry_interval: Config.message_retry_interval, &block)
       if Thread.current[:sync_enabled]
         raise "Cannot use synchronous methods inside a sync block"
       end
