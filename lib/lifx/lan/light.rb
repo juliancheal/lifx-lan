@@ -334,6 +334,26 @@ module LIFX
         context.tags_for_device(self)
       end
 
+      def location
+        send_message!(Protocol::Device::GetLocation.new,
+            wait_for: Protocol::Device::StateLocation) do |payload|
+          {
+            location: payload.location,
+            label: payload.label
+          }
+        end
+      end
+
+      def group
+        send_message!(Protocol::Device::GetGroup.new,
+            wait_for: Protocol::Device::StateGroup) do |payload|
+          {
+            group: payload.group,
+            label: payload.label
+          }
+        end
+      end
+
       # Returns whether the light is a gateway
       # @api private
       def gateway?
