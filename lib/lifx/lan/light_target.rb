@@ -19,6 +19,39 @@ module LIFX
         self
       end
 
+      # Attempts to set multiple zones on the light(s) to `color` asynchronously.
+      # This method cannot guarantee that the message was received.
+      # @param color [Color] The color to be set
+      # @param start_index [Numeric] The index of the first zone to be set
+      # @param end_index [Numeric] The index of the last zone to be set
+      # @param duration: [Numeric] Transition time in seconds
+      # @return [Light, LightCollection] self for chaining
+      def set_multizone_color(color, start_index: 0, end_index: 7, duration: LIFX::Config.default_duration)
+        send_message(Protocol::MultiZone::SetColorZones.new(
+          start_index: start_index,
+          end_index: end_index,
+          color: color.to_hsbk,
+          duration: (duration * MSEC_PER_SEC).to_i,
+          apply: 1,
+        ))
+        self
+      end
+
+      # @return [Numeric] Number of zones supported
+      def zone_count
+        send_message!(Protocol::MultiZone::GetColorZones.new(start_index: 0, end_index: 0),
+            wait_for: Protocol::MultiZone::StateZone) do |payload|
+          payload.total_zones
+        end
+      end
+
+      def tile_info
+        send_message!(Protocol::Tile::GetDeviceChain.new,
+            wait_for: Protocol::Tile::StateDeviceChain) do |payload|
+          payload
+        end
+      end
+
       # Attempts to apply a waveform to the light(s) asynchronously.
       # @note Don't use this directly.
       # @api private
