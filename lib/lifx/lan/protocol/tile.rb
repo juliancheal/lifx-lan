@@ -56,7 +56,7 @@ module LIFX
           endian :little
 
           uint8  :tile_start_index
-          uint8  :tile_end_index
+          uint8  :tile_length
           uint8  :reserved
           uint8  :x
           uint8  :y
@@ -80,7 +80,7 @@ module LIFX
           endian :little
 
           uint8  :tile_start_index
-          uint8  :tile_end_index
+          uint8  :tile_length
           uint8  :reserved
           uint8  :x
           uint8  :y

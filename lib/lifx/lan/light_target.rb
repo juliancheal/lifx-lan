@@ -10,7 +10,7 @@ module LIFX
       # @param color [Color] The color to be set
       # @param duration: [Numeric] Transition time in seconds
       # @return [Light, LightCollection] self for chaining
-      def set_color(color, duration: LIFX::Config.default_duration)
+      def set_color(color, duration: LIFX::LAN::Config.default_duration)
         send_message(Protocol::Light::SetColor.new(
           color: color.to_hsbk,
           duration: (duration * MSEC_PER_SEC).to_i,
@@ -26,13 +26,33 @@ module LIFX
       # @param end_index [Numeric] The index of the last zone to be set
       # @param duration: [Numeric] Transition time in seconds
       # @return [Light, LightCollection] self for chaining
-      def set_multizone_color(color, start_index: 0, end_index: 7, duration: LIFX::Config.default_duration)
+      def set_multizone_color(color, start_index: 0, end_index: 7, duration: LIFX::LAN::Config.default_duration)
         send_message(Protocol::MultiZone::SetColorZones.new(
           start_index: start_index,
           end_index: end_index,
           color: color.to_hsbk,
           duration: (duration * MSEC_PER_SEC).to_i,
           apply: 1,
+        ))
+        self
+      end
+
+      # Attempts to set every pixel on the tile(s) to `colors` asynchronously.
+      # This method cannot guarantee that the message was received.
+      # @param colors [Array<Color>] The 64 Colors to be set as a 1-d array
+      # @param tile_start_index [Numeric] The index of the first tile to be set
+      # @param length [Numeric] The number of tiles to set starting from the index
+      # @param duration: [Numeric] Transition time in seconds
+      # @return [Light, LightCollection] self for chaining
+      def set_tile_colors(colors, tile_start_index: 0, length: 1, duration: LIFX::LAN::Config.default_duration)
+        send_message(Protocol::Tile::SetTileState64.new(
+          colors: colors.map(&:to_hsbk),
+          tile_start_index: tile_start_index,
+          tile_length: [length, 1].min,
+          x: 0,
+          y: 0,
+          width: 8,
+          duration: (duration * MSEC_PER_SEC).to_i
         ))
         self
       end
@@ -45,6 +65,7 @@ module LIFX
         end
       end
 
+      # @return [Hash] Raw tile info
       def tile_info
         send_message!(Protocol::Tile::GetDeviceChain.new,
             wait_for: Protocol::Tile::StateDeviceChain) do |payload|
