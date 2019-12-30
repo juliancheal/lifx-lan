@@ -50,7 +50,7 @@ module LIFX
             reader.bind(ip, port)
             loop do
               begin
-                bytes, (_, _, ip, _) = reader.recvfrom(128)
+                bytes, (_, _, ip, _) = reader.recvfrom(1280)
                 logger.debug("<- #{bytes.each_byte.map { |b| b.to_s(16).rjust(2, '0') }.join}")
                 message = Message.unpack(bytes)
                 logger.debug("<- Incoming message: #{message}")
