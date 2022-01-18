@@ -10,7 +10,7 @@ require "lifx/lan/logging"
 require "lifx/lan/thread"
 
 require "lifx/lan/protocol/payload"
-%w(device light sensor wan wifi message).each { |f| require "lifx/lan/protocol/#{f}" }
+%w(device light sensor wan wifi message multi_zone tile).each { |f| require "lifx/lan/protocol/#{f}" }
 require "lifx/lan/protocol/type"
 require "lifx/lan/message"
 require "lifx/lan/transport"
